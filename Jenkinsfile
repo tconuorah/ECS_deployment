@@ -29,6 +29,19 @@ pipeline {
         checkout scm
       }
     }
+stage('Discover DinD IP') {
+  steps {
+    script {
+      def ip = sh(
+        script: "getent hosts dind | awk '{print \$1}'",
+        returnStdout: true
+      ).trim()
+      if (!ip) { error 'Could not resolve DinD IP' }
+      env.DOCKER_HOST = "tcp://${ip}:2375"
+      sh "echo Using DOCKER_HOST=${env.DOCKER_HOST}"
+    }
+  }
+}
 
     stage('Docker sanity') {
       steps {
