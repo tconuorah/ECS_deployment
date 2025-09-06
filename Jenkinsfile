@@ -3,7 +3,6 @@ pipeline {
 
   options {
     // Fail fast if a command fails
-    ansiColor('xterm')
     skipDefaultCheckout(true)
     timestamps()
   }
