@@ -1,0 +1,26 @@
+# essentials
+node_modules
+.git
+.gitignore
+Dockerfile
+docker-compose*
+*.md
+*.log
+npm-debug.log*
+yarn-*.log
+
+# build/test artifacts
+coverage
+build
+dist
+.tmp
+.cache
+
+# IDE & misc
+.vscode
+.idea
+*.tsbuildinfo
+
+# env files (don’t bake secrets)
+.env
+.env.*
