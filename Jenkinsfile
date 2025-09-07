@@ -5,7 +5,7 @@ pipeline {
     DOCKER_BUILDKIT = '1'
             DOCKER_HOST = 'tcp://dind:2375'
             AWS_DEFAULT_REGION = 'us-east-2'   // change if needed
-            ACCOUNT_ID = '3252-0471-6598'
+            ACCOUNT_ID = '325204716598'
             FRONTEND_REPO = "${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/frontend"
             BACKEND_REPO  = "${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/backend"
     }
@@ -29,7 +29,7 @@ pipeline {
 
         stage('Authenticate to ECR') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'your-aws-credentials-id']]) {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'e1512144-f4d0-405b-bde5-98ff3edba713']]) {
                     script {
                         sh '''
                             aws --version
@@ -57,11 +57,11 @@ pipeline {
 
         stage('Update ECS services') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'your-aws-credentials-id']]) {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'e1512144-f4d0-405b-bde5-98ff3edba713']]) {
                     script {
                         sh '''
-                            aws ecs update-service --cluster your-ecs-cluster-name --service your-frontend-service-name --force-new-deployment --region $AWS_REGION
-                            aws ecs update-service --cluster your-ecs-cluster-name --service your-backend-service-name --force-new-deployment --region $AWS_REGION
+                            aws ecs update-service --cluster devops-challenge-cluster --service devops-challenge-frontend-service --force-new-deployment --region $AWS_REGION
+                            aws ecs update-service --cluster devops-challenge-cluster --service devops-challenge-backend-service --force-new-deployment --region $AWS_REGION
                         '''
                     }
                 }
