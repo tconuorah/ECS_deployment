@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     environment {
-        // ====> Replace with your AWS region, e.g., 'us-east-1'
-        AWS_REGION = 'us-east-2'
-
-        // ====> Replace with your own ECR repository URIs
-        FRONTEND_REPO = '325204716598.dkr.ecr.us-east-2.amazonaws.com/devops-challenge-frontend'
-        BACKEND_REPO  = '325204716598.dkr.ecr.us-east-2.amazonaws.com/devops-challenge-backend'
+            AWS_REGION      = 'us-east-2'
+            AWS_ACCOUNT_ID  = '325204716598'
+            ECR_REGISTRY    = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+            FRONTEND_REPO   = "${ECR_REGISTRY}/devops-challenge-frontend"
+            BACKEND_REPO    = "${ECR_REGISTRY}/devops-challenge-backend"
     }
 
     stages {
@@ -26,20 +25,32 @@ pipeline {
             }
         }
 
-        stage('Authenticate to ECR') {
+        stage('Diagnose AWS identity') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: '325204716598']]) {
-                    script {
-                        sh '''
-                            aws --version
-                            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $FRONTEND_REPO
-                            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $BACKEND_REPO
-                        '''
+            withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-credentials']]) {
+                    sh '''
+                        set -e
+                        echo "AWS CLI version:" && aws --version
+                        echo "Caller identity:"
+                        aws sts get-caller-identity
+                        echo "ECR registries (region ${AWS_REGION}):"
+                        aws ecr describe-registry --region "${AWS_REGION}" || true
+                    '''
                     }
                 }
-            }
-        }
+             }
 
+            stage('Authenticate to ECR') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-ecr-credentials']]) {
+                sh '''
+                    set -e
+                    aws ecr get-login-password --region "${AWS_REGION}" \
+                    | docker login --username AWS --password-stdin "${ECR_REGISTRY}"
+                '''
+                }
+            }
+            }
         stage('Tag and Push images to ECR') {
             steps {
                 script {
