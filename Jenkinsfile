@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-    DOCKER_BUILDKIT = '1'
+    DOCKER_BUILDKIT = '0'
             DOCKER_HOST = 'tcp://dind:2375'
             AWS_DEFAULT_REGION = 'us-east-2'   // change if needed
             ACCOUNT_ID = '325204716598'
