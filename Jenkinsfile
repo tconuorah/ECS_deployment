@@ -2,13 +2,14 @@ pipeline {
     agent any
 
     environment {
-    DOCKER_BUILDKIT = '0'
-            DOCKER_HOST = 'tcp://dind:2375'
-            AWS_DEFAULT_REGION = 'us-east-2'   // change if needed
-            ACCOUNT_ID = '325204716598'
-            FRONTEND_REPO = "${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/frontend"
-            BACKEND_REPO  = "${ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/backend"
+        // ====> Replace with your AWS region, e.g., 'us-east-1'
+        AWS_REGION = 'us-east-2'
+
+        // ====> Replace with your own ECR repository URIs
+        FRONTEND_REPO = '325204716598.dkr.ecr.us-east-2.amazonaws.com/devops-challenge-frontend'
+        BACKEND_REPO  = '325204716598.dkr.ecr.us-east-2.amazonaws.com/devops-challenge-backend'
     }
+
     stages {
         stage('Checkout code') {
             steps {
@@ -19,9 +20,7 @@ pipeline {
         stage('Build Docker images') {
             steps {
                 script {
-                    retry(3) {
-      sh 'docker build -t frontend:latest ./frontend'
-    }
+                    sh 'docker build -t frontend:latest ./frontend'
                     sh 'docker build -t backend:latest ./backend'
                 }
             }
@@ -29,7 +28,7 @@ pipeline {
 
         stage('Authenticate to ECR') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'e1512144-f4d0-405b-bde5-98ff3edba713']]) {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'your-aws-credentials-id']]) {
                     script {
                         sh '''
                             aws --version
@@ -57,7 +56,7 @@ pipeline {
 
         stage('Update ECS services') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'e1512144-f4d0-405b-bde5-98ff3edba713']]) {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'your-aws-credentials-id']]) {
                     script {
                         sh '''
                             aws ecs update-service --cluster devops-challenge-cluster --service devops-challenge-frontend-service --force-new-deployment --region $AWS_REGION
