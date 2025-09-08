@@ -1,31 +1,23 @@
-import React, { useEffect, useState } from 'react'
+// frontend/src/App.js
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import config from './config';
 
-function App() {
-  const [successMessage, setSuccessMessage] = useState() 
-  const [failureMessage, setFailureMessage] = useState() 
+export default function App() {
+  const [text, setText] = useState('Fetching...');
 
   useEffect(() => {
-    const getId = async () => {
+    (async () => {
       try {
-        const resp = await fetch(config.backendUrl)
-        setSuccessMessage((await resp.json()).message)
+        const r = await fetch(`${config.backendUrl}/status`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+        setText(data.message ?? JSON.stringify(data));
+      } catch (e) {
+        setText(`Error: ${e.message}`);
       }
-      catch(e) {
-        setFailureMessage(e.message)
-      }
-    }
-    getId()
-  })
+    })();
+  }, []); // run once
 
-  return (
-    <div className="App">
-      {!failureMessage && !successMessage ? 'Fetching...' : null}
-      {failureMessage ? failureMessage : null}
-      {successMessage ? successMessage : null}
-    </div>
-  );
+  return <div className="App">{text}</div>;
 }
-
-export default App;

@@ -6,7 +6,7 @@ console.log(require('./config'));
 console.log(CORS_ORIGIN);
 
 const ID = uuidv4();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 const app = express();
 app.use(express.json());
@@ -25,12 +25,12 @@ app.use((req, res, next) => {
     next();
 });
 
-// Catch-all GET route
-app.get('/*', (req, res) => {
-    console.log(`${new Date().toISOString()} GET`);
-    res.json({ message: `SUCCESS ${ID}` });
-});
 
-app.listen(PORT, () => {
-    console.log(`Backend started on ${PORT}. Press Ctrl+C to exit`);
-});
+// Health for TG
+app.get('/health', (_, res) => res.status(200).json({ ok: true, id: ID }));
+
+// Explicit API paths
+app.get('/api/status', (_, res) => res.json({ message: `SUCCESS ${ID}` }));
+app.get('/api/*', (_, res) => res.json({ message: `SUCCESS ${ID}` })); // any other API path
+
+app.listen(PORT, '0.0.0.0', () => console.log(`Backend started on ${PORT}`));
